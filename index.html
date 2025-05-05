@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to top, #87CEEB, #ffffff);
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    #game {
+      text-align: center;
+      margin-top: 80px;
+    }
+
+    #letter {
+      font-size: 100px;
+      font-weight: bold;
+    }
+
+    #score, #timer {
+      font-size: 24px;
+    }
+
+    #message {
+      font-size: 32px;
+      margin: 20px;
+      color: red;
+    }
+
+    #playBtn, #restartBtn {
+      padding: 10px 20px;
+      font-size: 20px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    #inputBox {
+      font-size: 40px;
+      text-align: center;
+      width: 60px;
+      margin-top: 20px;
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="sky"></canvas>
+
+<div id="game">
+  <div id="score">Score: 0</div>
+  <div id="timer">Time: 20</div>
+  <div id="letter"></div>
+  <input type="text" id="inputBox" maxlength="1" disabled />
+  <div id="message"></div>
+  <button id="playBtn">Play</button>
+  <button id="restartBtn" style="display: none;">Restart</button>
+</div>
+
+<audio id="bgMusic" loop autoplay>
+  <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  const words = [
+    "apple", "banana", "grape", "orange", "mango",
+    "tiger", "lion", "zebra", "elephant", "monkey",
+    "red", "blue", "green", "yellow", "purple"
+  ];
+
+  let score = 0;
+  let time = 20;
+  let currentLetter = "";
+  let timerInterval;
+
+  const letterDiv = document.getElementById('letter');
+  const scoreDiv = document.getElementById('score');
+  const timerDiv = document.getElementById('timer');
+  const messageDiv = document.getElementById('message');
+  const playBtn = document.getElementById('playBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const bgMusic = document.getElementById('bgMusic');
+  const inputBox = document.getElementById('inputBox');
+
+  function getRandomLetter() {
+    const word = words[Math.floor(Math.random() * words.length)];
+    return word.charAt(0).toUpperCase();
+  }
+
+  function startGame() {
+    score = 0;
+    time = 20;
+    scoreDiv.textContent = "Score: 0";
+    timerDiv.textContent = "Time: 20";
+    messageDiv.textContent = "";
+    playBtn.style.display = "none";
+    restartBtn.style.display = "none";
+    inputBox.disabled = false;
+    inputBox.value = "";
+    inputBox.focus();
+    bgMusic.play();
+    nextLetter();
+
+    timerInterval = setInterval(() => {
+      time--;
+      timerDiv.textContent = "Time: " + time;
+      if (time <= 0) {
+        endGame(score >= 20 ? "Next Level!" : "Game Over");
+      }
+    }, 1000);
+  }
+
+  function nextLetter() {
+    currentLetter = getRandomLetter();
+    letterDiv.textContent = currentLetter;
+    inputBox.value = "";
+    inputBox.focus();
+  }
+
+  function endGame(msg) {
+    clearInterval(timerInterval);
+    letterDiv.textContent = "";
+    messageDiv.textContent = msg;
+    inputBox.disabled = true;
+    restartBtn.style.display = "inline-block";
+  }
+
+  inputBox.addEventListener('input', () => {
+    const typed = inputBox.value.toUpperCase();
+    if (typed === currentLetter) {
+      score++;
+      scoreDiv.textContent = "Score: " + score;
+      nextLetter();
+    } else {
+      endGame("Wrong Key! Game Over");
+    }
+  });
+
+  playBtn.onclick = startGame;
+  restartBtn.onclick = startGame;
+
+  // Sky bird animation
+  const canvas = document.getElementById('sky');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const birds = [];
+  for (let i = 0; i < 10; i++) {
+    birds.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, speed: 1 + Math.random() * 2 });
+  }
+
+  function drawBird(x, y) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 10, y - 5);
+    ctx.lineTo(x + 20, y);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+  }
+
+  function animateBirds() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let bird of birds) {
+      drawBird(bird.x, bird.y);
+      bird.x += bird.speed;
+      if (bird.x > canvas.width) bird.x = -20;
+    }
+    requestAnimationFrame(animateBirds);
+  }
+
+  animateBirds();
+</script>
+
+</body>
+</html>
